@@ -23,3 +23,16 @@ export const signin = createAsyncThunk<any, any>(
     }
   }
 );
+
+export const logout = createAsyncThunk<any, any>(
+  "/auth/logout",
+  async (navigate, { rejectWithValue }) => {
+    try {
+      localStorage.clear();
+      console.log("logout success ");
+      navigate("/");
+    } catch (error) {
+      console.log("error ", error);
+    }
+  }
+);

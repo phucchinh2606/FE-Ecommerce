@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import React from "react";
 import { useAppDispatch } from "../../../State/Store";
 import { sendLoginSignupOtp, signin } from "../../../State/AuthSlice";
+import { sellerLogin } from "../../../State/seller/sellerAuthSlice";
 
 const SellerLoginForm = () => {
   const dispatch = useAppDispatch();
@@ -13,7 +14,8 @@ const SellerLoginForm = () => {
     },
     onSubmit: (values) => {
       console.log("form data", values);
-      dispatch(signin(values));
+      // values.otp = Number(values.otp);
+      dispatch(sellerLogin({ email: values.email, otp: values.otp }));
     },
   });
   const handleSendOtp = () => {
