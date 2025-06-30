@@ -1,30 +1,46 @@
 import { Box, Button, Divider } from "@mui/material";
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import OrderStepper from "./OrderStepper";
 import { Payments } from "@mui/icons-material";
+import { useAppDispatch, useAppSelector } from "../../../State/Store";
+import {
+  fetchOrderById,
+  fetchOrderItemById,
+} from "../../../State/customer/orderSlice";
 
 const OrderDetail = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { orderId, orderItemId } = useParams();
+  const { order } = useAppSelector((store) => store);
+  useEffect(() => {
+    dispatch(
+      fetchOrderById({
+        orderId: Number(orderId),
+        jwt: localStorage.getItem("jwt") || "",
+      })
+    );
+    dispatch(
+      fetchOrderItemById({
+        orderItemId: Number(orderItemId),
+        jwt: localStorage.getItem("jwt") || "",
+      })
+    );
+  }, []);
   return (
     <Box className="space-y-5">
       <section className="flex flex-col gap-5 justify-center items-center">
         <img
           className="w-[100px]"
-          src={
-            "https://product.hstatic.net/200000551679/product/lemonade_son_kem_perfect_couple_lip_-_5_years_2019_3e748b66c3f24357a5031261d53edce7_1024x1024.jpg"
-          }
+          src={order.orderItem?.product.images[0]}
           alt=""
         />
         <div className="text-sm space-y-1 text-center">
           <h1 className="font-bold">
-            {"Lemonade Son kem Perfect Couple Lip - 5 years"}
+            {order.orderItem?.product.seller?.businessDetails.businessName}
           </h1>
-          <p>
-            Son kem Lemonade Perfect Couple Lip - 5 years là bộ sưu tập kỷ niệm
-            5 năm tuổi của Lemonade với bộ đôi Perfect Couple Lip và Perfect
-            Couple Blush.
-          </p>
+          <p>{order.orderItem?.product.title}</p>
           <p>
             <strong>Size: </strong>M
           </p>
@@ -42,11 +58,16 @@ const OrderDetail = () => {
         <h1 className="font-bold pb-3">Địa chỉ giao hàng</h1>
         <div className="text-sm space-y-2">
           <div className="flex gap-5 font-medium">
-            <p>{"Phuc Chinh"}</p>
+            <p>{order.currentOrder?.shippingAddress.name}</p>
             <Divider flexItem orientation="vertical" />
-            <p>{"0984612345"}</p>
+            <p>{order.currentOrder?.shippingAddress.mobile}</p>
           </div>
-          <p>Đông Anh Hà Nội - 100000</p>
+          <p>
+            {order.currentOrder?.shippingAddress.address}-
+            {order.currentOrder?.shippingAddress.state}-
+            {order.currentOrder?.shippingAddress.city}-
+            {order.currentOrder?.shippingAddress.pinCode}
+          </p>
         </div>
       </div>
       <div className="border space-y-4">
@@ -61,7 +82,7 @@ const OrderDetail = () => {
               cho sản phẩm này
             </p>
           </div>
-          <p className="font-medium">{"100000 vnđ"}</p>
+          <p className="font-medium">{order.orderItem?.sellingPrice} VNĐ</p>
         </div>
         <div className="px-5">
           <div className="bg-teal-50 px-5 py-2 text-xs font-medium flex items-center gap-3">
@@ -73,7 +94,7 @@ const OrderDetail = () => {
         <div className="px-5 pb-5">
           <p className="text-xs">
             <strong>Được bán bởi: </strong>
-            {"Sammi Shop"}
+            {order.orderItem?.product.seller?.businessDetails.businessName}
           </p>
         </div>
         <div className="p-10">

@@ -23,6 +23,8 @@ const FilterSection = () => {
 
   const updateFilterParam = (e: any) => {
     const { value, name } = e.target;
+    console.log("Filter changed:", { name, value });
+
     if (value) {
       searchParams.set(name, value);
     } else {
@@ -30,11 +32,11 @@ const FilterSection = () => {
     }
     setSearchParams(searchParams);
   };
+
   const clearAllFilter = () => {
-    searchParams.forEach((value: any, key: any) => {
-      searchParams.delete(key);
-    });
-    setSearchParams(searchParams);
+    console.log("Clearing all filters");
+    const newSearchParams = new URLSearchParams();
+    setSearchParams(newSearchParams);
   };
   return (
     <div className="-z-50 space-y-5 bg-white">

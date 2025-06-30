@@ -18,6 +18,7 @@ import {
 import CategorySheet from "./CategorySheet";
 import { mainCategory } from "../../../data/category/mainCategory";
 import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "../../../State/Store";
 
 const Navbar = () => {
   const theme = useTheme();
@@ -25,6 +26,7 @@ const Navbar = () => {
   const [selectedCategory, setSelectedCategory] = useState("men");
   const [showCategorySheet, setShowCategorySheet] = useState(false);
   const navigate = useNavigate();
+  const { auth } = useAppSelector((store) => store);
   return (
     <>
       <Box className="sticky top-0 left-0 right-0 bg-white " sx={{ zIndex: 2 }}>
@@ -62,7 +64,7 @@ const Navbar = () => {
             <IconButton>
               <SearchIcon />
             </IconButton>
-            {true ? (
+            {auth.user ? (
               <Button
                 onClick={() => navigate("/account/orders")}
                 className="flex items-center gap-2"
@@ -71,12 +73,16 @@ const Navbar = () => {
                   sx={{ width: 29, height: 29 }}
                   src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/504017484_2160498451118910_743385815678531262_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=pOYyV7nXPfQQ7kNvwHZt7Lq&_nc_oc=AdmuJWXLz1pL6rQKepVwpmolt0_-2UQnw4sxxsuxNxXbcLLZn92XheJ5djwY5FMiCi2FTRKSgKedL8sUS1rVr3pY&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=3EzVogMnZCpBLpWHvzOyFg&oh=00_AfOCbLwfyl7-JOdfF6suxpvo2XcDMb47vc0N-Y--OEX0Zg&oe=6850EF45"
                 />
-                <h1 className="font-semibold hidden lg:block">PhucChinh</h1>
+                <h1 className="font-semibold hidden lg:block">
+                  {auth.user?.fullname}
+                </h1>
               </Button>
             ) : (
-              <Button variant="contained">Login</Button>
+              <Button onClick={() => navigate("/login")} variant="contained">
+                Login
+              </Button>
             )}
-            <IconButton>
+            <IconButton onClick={() => navigate("/wishlist")}>
               <FavoriteBorder sx={{ fontSize: 29 }} />
             </IconButton>
             <IconButton onClick={() => navigate("/cart")}>

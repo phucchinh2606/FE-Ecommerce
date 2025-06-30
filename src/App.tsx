@@ -19,26 +19,48 @@ import AdminDashboard from "./admin/Pages/Dashboard/AdminDashboard";
 import { fetchProducts } from "./State/fetchProduct";
 import { useAppDispatch, useAppSelector } from "./State/Store";
 import { fetchSellerProfile } from "./State/seller/sellerSlice";
+import Auth from "./customer/pages/Auth/Auth";
+import { fetchUserProfile } from "./State/AuthSlice";
+import PaymentSuccess from "./customer/pages/PaymentSuccess";
+import WishList from "./customer/WishList/WishList";
 
 function App() {
   const dispatch = useAppDispatch();
-  const { seller } = useAppSelector((store) => store);
+  const { seller, auth } = useAppSelector((store) => store);
   const navigate = useNavigate();
   useEffect(() => {
     // fetchProducts();
-    dispatch(fetchSellerProfile(localStorage.getItem("jwt") || ""));
+    const jwt = localStorage.getItem("jwt");
+    if (jwt && jwt.trim() !== "") {
+      dispatch(fetchSellerProfile(jwt));
+      if (!auth.user) {
+        dispatch(fetchUserProfile({ jwt }));
+      }
+    } else {
+      // Reset auth state if no JWT
+      dispatch({ type: "auth/logout/fulfilled" });
+    }
   }, []);
+
   useEffect(() => {
     if (seller.profile) {
       navigate("/seller");
     }
   }, [seller.profile]);
+
+  useEffect(() => {
+    const jwt = auth.jwt || localStorage.getItem("jwt");
+    if (jwt && auth.jwt && !auth.user) {
+      dispatch(fetchUserProfile({ jwt }));
+    }
+  }, [auth.jwt]);
   return (
     <ThemeProvider theme={customTheme}>
       <div>
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Auth />} />
           <Route path="/products/:category" element={<Product />} />
           <Route path="/reviews/:productId" element={<Review />} />
           <Route
@@ -46,7 +68,13 @@ function App() {
             element={<ProductDetails />}
           />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<WishList />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route
+            path="/payment-success"
+            ///:orderId
+            element={<PaymentSuccess />}
+          />
           <Route path="/become-seller" element={<BecomeSeller />} />
           <Route path="/account/*" element={<Account />} />
           <Route path="/seller/*" element={<SellerDashboard />} />

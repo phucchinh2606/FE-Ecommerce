@@ -2,12 +2,11 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { api } from "../../config/Api";
 import { Product } from "../../types/ProductTypes";
 
-const API_URL = "http://localhost:4869";
 export const fetchProductById = createAsyncThunk(
-  "/products/fetchProductById",
-  async (productId, { rejectWithValue }) => {
+  "products/fetchProductById",
+  async (productId: any, { rejectWithValue }) => {
     try {
-      const response = await api.get(`${API_URL}/${productId}`);
+      const response = await api.get(`/products/${productId}`);
       const data = response.data;
       console.log("data: ", data);
       return data;
@@ -19,10 +18,10 @@ export const fetchProductById = createAsyncThunk(
 );
 
 export const searchProduct = createAsyncThunk(
-  "/products/searchProduct",
+  "products/searchProduct",
   async (query, { rejectWithValue }) => {
     try {
-      const response = await api.get(`${API_URL}/search`, {
+      const response = await api.get(`/products/search`, {
         params: {
           query,
         },
@@ -38,10 +37,11 @@ export const searchProduct = createAsyncThunk(
 );
 
 export const fetchAllProducts = createAsyncThunk<any, any>(
-  "/products/fetchAllProducts",
+  "products/fetchAllProducts",
   async (params, { rejectWithValue }) => {
     try {
-      const response = await api.get(`${API_URL}`, {
+      console.log("Sending request with params:", params);
+      const response = await api.get(`/products`, {
         params: {
           ...params,
           pageNumber: params.pageNumber || 0,
@@ -49,10 +49,23 @@ export const fetchAllProducts = createAsyncThunk<any, any>(
       });
       const data = response.data;
       console.log("All product data: ", data);
+      console.log("Response structure:", {
+        hasContent: !!data.content,
+        isArray: Array.isArray(data),
+        keys: Object.keys(data),
+        contentLength: data.content?.length,
+        totalElements: data.totalElements,
+        totalPages: data.totalPages,
+      });
       return data;
     } catch (error: any) {
-      console.log("error ", error);
-      rejectWithValue(error.message);
+      console.log("API Error:", error);
+      console.log("Error response:", error.response?.data);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch products"
+      );
     }
   }
 );
@@ -97,7 +110,17 @@ const productSlice = createSlice({
     });
     builder.addCase(fetchAllProducts.fulfilled, (state, action) => {
       state.loading = false;
-      state.products = action.payload;
+      // Handle both Page object and direct array response
+      if (action.payload && action.payload.content) {
+        state.products = action.payload.content;
+        state.totalPages = action.payload.totalPages || 1;
+      } else if (Array.isArray(action.payload)) {
+        state.products = action.payload;
+        state.totalPages = 1;
+      } else {
+        state.products = [];
+        state.totalPages = 1;
+      }
     });
     builder.addCase(fetchAllProducts.rejected, (state, action) => {
       state.loading = false;

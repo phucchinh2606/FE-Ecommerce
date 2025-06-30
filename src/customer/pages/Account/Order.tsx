@@ -1,8 +1,15 @@
-import React from "react";
-import OrderItem from "./OrderItem";
+import React, { useEffect } from "react";
+import OrderItem from "./OrderItemCard";
 import OrderDetail from "./OrderDetail";
+import { useAppDispatch, useAppSelector } from "../../../State/Store";
+import { fetchUserOrderHistory } from "../../../State/customer/orderSlice";
 
 const Order = () => {
+  const dispatch = useAppDispatch();
+  const { order } = useAppSelector((store) => store);
+  useEffect(() => {
+    dispatch(fetchUserOrderHistory(localStorage.getItem("jwt") || ""));
+  }, []);
   return (
     <div className="text-sm min-h-screen">
       <div className="pb-5">
@@ -10,10 +17,11 @@ const Order = () => {
         <p>from any time</p>
       </div>
       <div className="space-y-2">
-        {[1, 1, 1, 1, 1].map((item) => (
-          // <OrderItem />
-          <OrderDetail />
-        ))}
+        {order.orders.map((order) =>
+          order.orderItems.map((item) => (
+            <OrderItem order={order} item={item} />
+          ))
+        )}
       </div>
     </div>
   );
